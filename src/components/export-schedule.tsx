@@ -1,0 +1,7 @@
+import type { RefObject } from "react";
+import { addDays, assignmentTemplate, DAY_NAMES, type Schedule, type Workspace } from "@/lib/scheduler";
+
+/** Dedicated public output: no absence, target hours, availability or internal notes. */
+export function ExportSchedule({ workspace: w, schedule, exportRef }: { workspace: Workspace; schedule: Schedule; exportRef: RefObject<HTMLDivElement | null> }) {
+  return <div ref={exportRef} className="export-schedule" aria-hidden="true"><header><strong>{w.name}</strong><span>Raspored tima · {schedule.week}–{addDays(schedule.week, 6)}</span><small>{schedule.status === "published" ? "Objavljen raspored" : "NACRT — nije objavljen"} · Europe/Belgrade</small></header>{DAY_NAMES.map((day, i) => <section key={day}><h3>{day} <small>{addDays(schedule.week, i)}</small></h3>{schedule.assignments.filter(a => a.day === i).sort((a, b) => assignmentTemplate(a, w.templates).start.localeCompare(assignmentTemplate(b, w.templates).start)).map(a => { const t = assignmentTemplate(a, w.templates); return <div className="export-row" key={a.id}><strong>{w.employees.find(e => e.id === a.employeeId)?.name ?? "Zaposleni"}</strong><span>{a.position}</span><b>{t.start}–{t.end}{t.end < t.start ? " (+1 dan)" : ""}</b></div>; })}{!schedule.assignments.some(a => a.day === i) && <p>Nema planiranih smena.</p>}</section>)}<footer>ShiftFlow Basic · {schedule.publishedAt ? `Objavljeno ${new Date(schedule.publishedAt).toLocaleString("sr-Latn-RS", { timeZone: "Europe/Belgrade" })}` : "Radni nacrt"}</footer></div>;
+}
